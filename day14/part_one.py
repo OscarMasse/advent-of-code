@@ -11,12 +11,12 @@ class Point:
     y: int
 
     @classmethod
-    def from_str_position(cls, position) -> "Point":
+    def from_str_position(cls, position) -> 'Point':
         x, y = position.split(",")
         return cls(int(x), int(y))
 
     @staticmethod
-    def interpolate(points: list["Point"]) -> list["Point"]:
+    def interpolate(points: list['Point']) -> list['Point']:
         if len(points) == 1:
             return points
         output = []
@@ -62,14 +62,7 @@ class Screen(Iterable):
             return len(self.elements)
 
         def __str__(self):
-            return "".join(self.elements)
-
-        def add_column_left(self):
-            self.elements.insert(0, ".")
-            self.offset += 1
-
-        def add_column_right(self):
-            self.elements.append(".")
+            return ''.join(self.elements)
 
     matrix: list[Line]
     offset: int = 0
@@ -87,18 +80,16 @@ class Screen(Iterable):
         ys = [point.y for point in points]
         self.offset = y_min = 0
         y_max = max(ys) + 1
-        self.matrix = [
-            self.Line(["." for _ in range(x_min, x_max + 1)], offset=-x_min)
-            for _ in range(y_min, y_max + 1)
-        ]
+        self.matrix = [self.Line(['.' for _ in range(x_min, x_max + 1)], offset=-x_min) for _ in
+                       range(y_min, y_max + 1)]
 
         # Place source
-        self[source.y][source.x] = "+"
+        self[source.y][source.x] = '+'
 
         # Place rocks
         for rock_path in rock_paths:
             for point in Point.interpolate(rock_path):
-                self[point] = "#"
+                self[point] = '#'
 
     def __iter__(self) -> Iterator:
         for line in self.matrix:
@@ -106,13 +97,8 @@ class Screen(Iterable):
 
     def __getitem__(self, key: int | Point):
         if isinstance(key, Point):
-            y = key.y - self.offset
-            if key.x + self.matrix[y].offset >= len(self.matrix[y]):
-                self.add_column_right()
-            elif key.x + self.matrix[y].offset < 0:
-                self.add_column_left()
-            return self.matrix[y][key.x]
-        return self.matrix[key - self.offset]
+            return self.matrix[key.y + self.offset][key.x]
+        return self.matrix[key + self.offset]
 
     def __setitem__(self, key: int | Point, value):
         if isinstance(key, Point):
@@ -128,60 +114,47 @@ class Screen(Iterable):
     def y_max(self) -> int:
         return -self.offset + len(self.matrix) - 1
 
-    def add_column_left(self):
-        for line in self.matrix:
-            line.add_column_left()
-
-    def add_column_right(self):
-        for line in self.matrix:
-            line.add_column_right()
-
     def print(self, count: int | None):
         first_line = self[0]
-        print(
-            f"   [{first_line.x_min}-{first_line.x_max}{f' - Sand units: {count}' if count else ''}]"
-        )
+        print(f"   [{first_line.x_min}-{first_line.x_max}{f' - Sand units: {count}' if count else ''}]")
         for index, line in enumerate(self.matrix, start=self.offset):
             print(f"{'{:3d}'.format(index)} {str(line)}")
-        # Bedrock
-        print("    " + "#" * len(self[0]) + "\n")
+        print('\n')
 
 
 def solve():
     source = Point(500, 0)
     screen = Screen(load_input(), source)
     sand_count = 0
-    while not screen[source] == "o":
+    running = True
+    while running:
         sand_unit = source
         while True:
-            # Bedrock
+            # Abyss
             if sand_unit.y == screen.y_max:
-                # Idle
-                screen[sand_unit] = "o"
-                sand_count += 1
-                screen.print(sand_count)
+                running = False
                 break
 
             # Bottom
             next_position = Point(sand_unit.x, sand_unit.y + 1)
-            if screen[next_position] == ".":
+            if screen[next_position] == '.':
                 sand_unit = next_position
                 continue
 
             # Bottom left
             next_position = Point(sand_unit.x - 1, sand_unit.y + 1)
-            if screen[next_position] == ".":
+            if screen[next_position] == '.':
                 sand_unit = next_position
                 continue
 
             # Bottom right
             next_position = Point(sand_unit.x + 1, sand_unit.y + 1)
-            if screen[next_position] == ".":
+            if screen[next_position] == '.':
                 sand_unit = next_position
                 continue
 
             # Idle
-            screen[sand_unit] = "o"
+            screen[sand_unit] = 'o'
             sand_count += 1
             screen.print(sand_count)
             break
@@ -189,5 +162,5 @@ def solve():
     print(sand_count)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     solve()
