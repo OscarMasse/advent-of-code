@@ -8,5 +8,5 @@ Paste your session cookie in `session_cookie.txt` (without `session=`)
 
 Use the year of your choice:
 ```
-python ./generator.py 2022
+python ./generator.py 2023
 ```
